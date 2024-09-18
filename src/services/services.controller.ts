@@ -10,11 +10,20 @@ import { AuthGuard } from '@nestjs/passport';
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) { }
 
+  // CRIAR SERVIÇO
   @Post()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN', 'MASTER')
   async create(@Body() createServiceDto: CreateServiceDto) {
     return await this.servicesService.create(createServiceDto);
+  }
+
+  // AVANÇAR STATUS DO SERVIÇO
+  @Patch(':id/status')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'MASTER')
+  async updateStatus(@Param('id') id: string) {
+    return await this.servicesService.updateServiceStatus(id);
   }
 
   @Get()

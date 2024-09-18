@@ -107,7 +107,7 @@ model Service {
   delivered_time DateTime?
   description    String?
   payment_method PaymentMethod?
-  status         ServiceStatus
+  status         ServiceStatus  @default(PENDING)
 }
 
 model Surfboards {
