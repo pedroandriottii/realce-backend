@@ -1,0 +1,127 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// USER MODELS //
+
+enum UserRole {
+  ADMIN
+  USER
+  MASTER
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+  FREE
+}
+
+enum SurfboardsCategory {
+  BANDIDA
+  CORINGA
+  MR
+  FISH_70
+  GOO_FISH
+  FISH_SUPER
+  MINI_FUN
+  MINI_LONG
+  LONG
+  KITE_SURF
+  KITE_FOIL
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  phone         String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          UserRole  @default(USER)
+  accounts      Account[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+// SERVICE MODELS //
+
+enum ServiceStatus {
+  PENDING
+  READY
+  DELIVERED
+}
+
+model Service {
+  id             String         @id @default(cuid())
+  photo_url      String?
+  client_name    String
+  user_mail      String
+  phone          String
+  value          Float
+  max_time       DateTime
+  now_time       DateTime
+  ready_time     DateTime?
+  delivered_time DateTime?
+  description    String
+  payment_method PaymentMethod?
+  status         ServiceStatus
+}
+
+model Surfboards {
+  id          String              @id @default(cuid())
+  title       String
+  description String?
+  price       Float
+  image       String[]
+  model       String?
+  volume      Float?
+  size        String?
+  is_new      Boolean             @default(false)
+  category    SurfboardsCategory?
+  coverImage  String
+  sold        DateTime?
+  registered  DateTime
+}
