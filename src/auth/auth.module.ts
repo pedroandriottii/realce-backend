@@ -8,6 +8,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtStrategy } from './jwt.strategy';
 import { RolesGuard } from './roles.guard';
 import { GoogleStrategy } from './google.strategy';
+import { VerificationTokenService } from './verification-token.service';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { GoogleStrategy } from './google.strategy';
     forwardRef(() => UsersModule),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, JwtStrategy, RolesGuard, GoogleStrategy],
+  providers: [AuthService, PrismaService, JwtStrategy, RolesGuard, GoogleStrategy, VerificationTokenService],
   exports: [RolesGuard, AuthService, JwtModule],
 })
 export class AuthModule { }
