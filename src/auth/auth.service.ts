@@ -62,17 +62,8 @@ export class AuthService {
             throw new UnauthorizedException(`Senha inválida.`);
         }
 
-        const accessToken = this.jwtService.sign({ userId: user.id, role: user.role })
-        return {
-            accessToken,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                role: user.role
-            },
-        }
+        const accessToken = this.jwtService.sign({ userId: user.id, role: user.role });
+        return { accessToken }
     }
 
     async validateOAuthLogin(email: string, name: string): Promise<any> {
@@ -90,16 +81,9 @@ export class AuthService {
             });
         }
 
-        const accessToken = this.jwtService.sign({ userId: user.id, role: user.role })
+        const accessToken = this.jwtService.sign({ userId: user.id, role: user.role });
         return {
             accessToken,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                role: user.role
-            },
         }
     }
 }

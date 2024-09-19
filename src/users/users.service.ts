@@ -15,6 +15,25 @@ export class UsersService {
     });
   }
 
+  async getUserProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        name: true,
+        phone: true,
+      },
+    });
+
+    if (!user) {
+      throw new Error('Usuario não encontrado');
+    }
+
+    return user
+  }
+
   create(createUserDto: CreateUserDto) {
     return 'This action adds a new user';
   }
@@ -30,6 +49,7 @@ export class UsersService {
         id: true,
         email: true,
         role: true,
+        name: true,
       },
     });
   }
