@@ -33,7 +33,7 @@ export class AuthController {
         }
     }
 
-    @Get('verify-email')
+    @Post('verify-email')
     async verifyCode(@Body('email') email: string, @Body('token') token: string) {
         if (!email || !token) {
             throw new BadRequestException('Email e token são obrigatórios')
