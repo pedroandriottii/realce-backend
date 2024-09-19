@@ -21,6 +21,12 @@ export class AuthService {
             throw new ConflictException('Email já está em uso')
         }
 
+        const existingPhone = await this.prisma.user.findFirst({ where: { phone } });
+
+        if (existingPhone) {
+            throw new ConflictException('Telefone já está em uso');
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10)
 
         const user = await this.prisma.user.create({
@@ -85,5 +91,30 @@ export class AuthService {
         return {
             accessToken,
         }
+    }
+
+    async verifyEmailCode(email: string, token: string): Promise<{ success: string } | { error: string }> {
+        const existingToken = await this.prisma.verificationToken.findUnique({
+            where: { email, token },
+        });
+
+        if (!existingToken) {
+            return { error: 'Código inválido' };
+        }
+
+        if (new Date(existingToken.expires) < new Date()) {
+            return { error: 'Código expirado' };
+        }
+
+        await this.prisma.user.update({
+            where: { email },
+            data: { emailVerified: new Date() },
+        });
+
+        await this.prisma.verificationToken.delete({
+            where: { id: existingToken.id },
+        });
+
+        return { success: 'E-mail verificado com sucesso!' };
     }
 }

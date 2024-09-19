@@ -1,15 +1,13 @@
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const domain = process.env.PUBLIC_APP_URL;
 
 export const sendVerificationEmail = async (email: string, token: string) => {
-    const confirmLink = `${domain}/auth/new-verification?token=${token}`;
-
     await resend.emails.send({
         from: 'contato@realcenordeste.com.br',
         to: email,
-        subject: 'Confirme seu email',
-        html: `<p>Clique no link para confirmar seu email: <a href="${confirmLink}">${confirmLink}</a></p>`,
+        subject: 'Seu Código de Verificação',
+        html: `<p>Seu código de verificação é: <strong>${token}</strong></p>
+               <p>Por favor, insira esse código na tela de verificação para confirmar seu e-mail.</p>`,
     });
 };
