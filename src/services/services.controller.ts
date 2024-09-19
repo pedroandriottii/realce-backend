@@ -1,10 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
+import { ServiceStatus } from '@prisma/client';
+
+interface CustomRequest extends Request {
+  user: {
+    email: string;
+    role: string;
+  };
+}
+
 
 @Controller('services')
 export class ServicesController {
@@ -26,9 +35,15 @@ export class ServicesController {
     return await this.servicesService.updateServiceStatus(id);
   }
 
+  // LISTAR SERVIÇOS POR USUÁRIO E STATUS
   @Get()
-  findAll() {
-    return this.servicesService.findAll();
+  @UseGuards(AuthGuard('jwt'))
+  async findAll(@Req() request: CustomRequest, @Query('status') status: ServiceStatus) {
+    const user = request.user as { email: string, role: string }
+    if (user.role === 'ADMIN' || user.role === 'MASTER') {
+      return this.servicesService.findAll(status);
+    }
+    return this.servicesService.findAllByUser(user.email, status);
   }
 
   @Get(':id')
@@ -41,8 +56,11 @@ export class ServicesController {
     return this.servicesService.update(+id, updateServiceDto);
   }
 
+  // DELETAR SERVIÇO
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.servicesService.remove(+id);
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('MASTER')
+  async remove(@Param('id') id: string) {
+    return await this.servicesService.remove(id);
   }
 }

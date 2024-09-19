@@ -69,8 +69,21 @@ export class ServicesService {
   }
 
 
-  findAll() {
-    return `This action returns all services`;
+  async findAllByUser(email: string, status: ServiceStatus) {
+    return await this.prisma.service.findMany({
+      where: {
+        user_mail: email,
+        status: status,
+      },
+    });
+  }
+
+  async findAll(status: ServiceStatus) {
+    return await this.prisma.service.findMany({
+      where: {
+        status,
+      }
+    })
   }
 
   findOne(id: number) {
@@ -81,7 +94,17 @@ export class ServicesService {
     return `This action updates a #${id} service`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} service`;
+  async remove(id: string) {
+    const serviceExists = await this.prisma.service.findUnique({
+      where: { id },
+    })
+    if (!serviceExists) {
+      throw new Error(`Serviço com o id ${id} não encontrado.`);
+    }
+    const service = await this.prisma.service.delete({
+      where: { id },
+    })
+
+    return service;
   }
 }

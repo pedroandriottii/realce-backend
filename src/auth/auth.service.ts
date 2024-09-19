@@ -7,7 +7,6 @@ import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { sendVerificationEmail } from './email.service';
 import { VerificationTokenService } from './verification-token.service';
 
-
 @Injectable()
 export class AuthService {
     constructor(private prisma: PrismaService, private jwtService: JwtService, private verificationTokenService: VerificationTokenService) {
@@ -63,9 +62,16 @@ export class AuthService {
             throw new UnauthorizedException(`Senha inválida.`);
         }
 
-
+        const accessToken = this.jwtService.sign({ userId: user.id, role: user.role })
         return {
-            accessToken: this.jwtService.sign({ userId: user.id, role: user.role }),
+            accessToken,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role
+            },
         }
     }
 
@@ -84,8 +90,16 @@ export class AuthService {
             });
         }
 
+        const accessToken = this.jwtService.sign({ userId: user.id, role: user.role })
         return {
-            accessToken: this.jwtService.sign({ userId: user.id, role: user.role }),
-        };
+            accessToken,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role
+            },
+        }
     }
 }
