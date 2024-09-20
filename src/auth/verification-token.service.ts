@@ -1,5 +1,3 @@
-// src/auth/verification-token.service.ts
-import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 
