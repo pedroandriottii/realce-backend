@@ -11,8 +11,8 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   async getProfile(@Req() req) {
-    const userId = req.user.userId
-    return await this.usersService.getUserProfile(userId);
+    const accessToken = req.headers.authorization.split(' ')[1];
+    return await this.usersService.getUserProfile(accessToken);
   }
 
   @Post()
