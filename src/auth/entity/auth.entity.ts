@@ -1,3 +1,7 @@
 export class AuthEntity {
-    accessToken: string;
+    success: boolean;
+    accessToken?: string;
+    user?: any;
+    message?: string;
+    emailVerified?: boolean;
 }

@@ -48,6 +48,9 @@ export class AuthService {
     }
 
     async login(email: string, password: string): Promise<AuthEntity> {
+
+        var isEmailVerified = true;
+
         const user = await this.prisma.user.findUnique({
             where: { email }
         })
@@ -59,7 +62,9 @@ export class AuthService {
         if (!user.emailVerified) {
             const verificationToken = await this.verificationTokenService.generateVerificationToken(email);
             await sendVerificationEmail(email, verificationToken.token);
-            throw new UnauthorizedException(`Email não verificado, reenviando o e-mail de confirmação.`);
+            isEmailVerified = false;
+            console.log('Email não verificado');
+            return { success: true, user, emailVerified: isEmailVerified };
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -69,7 +74,8 @@ export class AuthService {
         }
 
         const accessToken = this.jwtService.sign({ userId: user.id, role: user.role });
-        return { accessToken }
+
+        return { success: true, user, accessToken, emailVerified: isEmailVerified };
     }
 
     async validateOAuthLogin(email: string, name: string): Promise<any> {
@@ -93,17 +99,25 @@ export class AuthService {
         }
     }
 
-    async verifyEmailCode(email: string, token: string): Promise<{ success: string } | { error: string }> {
-        const existingToken = await this.prisma.verificationToken.findUnique({
+    async verifyEmailCode(email: string, token: string): Promise<AuthEntity> {
+        const existingToken = await this.prisma.verificationToken.findFirst({
             where: { email, token },
         });
 
         if (!existingToken) {
-            return { error: 'Código inválido' };
+            throw new NotFoundException('Token inválido');
         }
 
         if (new Date(existingToken.expires) < new Date()) {
-            return { error: 'Código expirado' };
+            throw new UnauthorizedException('Token expirado');
+        }
+
+        const user = await this.prisma.user.findUnique({
+            where: { email },
+        });
+
+        if (!user) {
+            throw new NotFoundException('Usuário não encontrado');
         }
 
         await this.prisma.user.update({
@@ -115,6 +129,8 @@ export class AuthService {
             where: { id: existingToken.id },
         });
 
-        return { success: 'E-mail verificado com sucesso!' };
+        const accessToken = this.jwtService.sign({ userId: user.id, role: user.role });
+
+        return { success: true, accessToken, user: user, emailVerified: true };
     }
 }

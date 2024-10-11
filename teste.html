@@ -1,14 +1,4 @@
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-export const sendVerificationEmail = async (email: string, token: string) => {
-    await resend.emails.send({
-        from: 'contato@realcenordeste.com.br',
-        to: email,
-        subject: 'Seu Código de Verificação',
-        html: `
-          <div
+<div
     style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;; border: 1px solid #ddd; border-radius: 10px;">
     <div
         style="display: flex; justify-content: space-around; padding: 10px; background-color: #EAF825; align-items: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
@@ -37,6 +27,3 @@ export const sendVerificationEmail = async (email: string, token: string) => {
         <p>© 2024 Realce Nordeste. Todos os direitos reservados.</p>
     </div>
 </div>
-        `,
-    });
-};
