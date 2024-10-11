@@ -3,10 +3,12 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ServiceStatus } from '@prisma/client';
+import { EmailService } from './email.service';
 
 @Injectable()
 export class ServicesService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService, private emailService: EmailService) {
+  }
 
   async create(createServiceDto: CreateServiceDto) {
 
@@ -27,6 +29,8 @@ export class ServicesService {
         status
       }
     })
+
+    await this.emailService.sendServiceCreatedEmail(user_mail, service.id);
 
     return service;
   }
@@ -62,10 +66,14 @@ export class ServicesService {
       updateData.delivered_time = delivered_time;
     }
 
-    return await this.prisma.service.update({
+    const updatedService = await this.prisma.service.update({
       where: { id },
       data: updateData,
     });
+
+    await this.emailService.sendStatusUpdatedEmail(service.user_mail, service.id, status);
+
+    return updatedService
   }
 
 
