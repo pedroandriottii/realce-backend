@@ -77,10 +77,16 @@ export class ServicesService {
   }
 
 
-  async findAllByUser(email: string, status: ServiceStatus) {
+  async findAllByUser(userId: string, status: ServiceStatus) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    })
+    if (!user) {
+      throw new Error(`Usuário com o id ${userId} não encontrado.`);
+    }
     return await this.prisma.service.findMany({
       where: {
-        user_mail: email,
+        user_mail: user.email,
         status: status,
       },
     });

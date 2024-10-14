@@ -9,7 +9,7 @@ import { ServiceStatus } from '@prisma/client';
 
 interface CustomRequest extends Request {
   user: {
-    email: string;
+    userId: string;
     role: string;
   };
 }
@@ -39,11 +39,12 @@ export class ServicesController {
   @Get()
   @UseGuards(AuthGuard('jwt'))
   async findAll(@Req() request: CustomRequest, @Query('status') status: ServiceStatus) {
-    const user = request.user as { email: string, role: string }
+    const user = request.user as { userId: string, role: string }
+    console.log(user)
     if (user.role === 'ADMIN' || user.role === 'MASTER') {
       return this.servicesService.findAll(status);
     }
-    return this.servicesService.findAllByUser(user.email, status);
+    return this.servicesService.findAllByUser(user.userId, status);
   }
 
   @Get(':id')
