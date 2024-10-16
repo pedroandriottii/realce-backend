@@ -19,7 +19,6 @@ interface CustomRequest extends Request {
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) { }
 
-  // CRIAR SERVIÇO
   @Post()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN', 'MASTER')
@@ -27,7 +26,6 @@ export class ServicesController {
     return await this.servicesService.create(createServiceDto);
   }
 
-  // AVANÇAR STATUS DO SERVIÇO
   @Patch(':id/status')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN', 'MASTER')
@@ -35,7 +33,6 @@ export class ServicesController {
     return await this.servicesService.updateServiceStatus(id);
   }
 
-  // LISTAR SERVIÇOS POR USUÁRIO E STATUS
   @Get()
   @UseGuards(AuthGuard('jwt'))
   async findAll(@Req() request: CustomRequest, @Query('status') status: ServiceStatus) {
@@ -48,13 +45,18 @@ export class ServicesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.servicesService.findOne(+id);
+  @UseGuards(AuthGuard('jwt'))
+  async findOne(@Param('id') id: string, @Req() req: Request) {
+    const userId = (req as CustomRequest).user.userId;
+    const role = (req as CustomRequest).user.role;
+    return this.servicesService.findOne(id, userId, role);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
-    return this.servicesService.update(+id, updateServiceDto);
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN', 'MASTER')
+  async update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
+    return this.servicesService.update(id, updateServiceDto);
   }
 
   // DELETAR SERVIÇO

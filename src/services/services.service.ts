@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ServiceStatus } from '@prisma/client';
+import { ServiceStatus, User } from '@prisma/client';
 import { EmailService } from './email.service';
 
 @Injectable()
@@ -100,12 +100,34 @@ export class ServicesService {
     })
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} service`;
+  async findOne(id: string, userId: string, role: string) {
+    const service = await this.prisma.service.findUnique({
+      where: { id },
+    });
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    })
+
+    if (!service) {
+      throw new NotFoundException(`Serviço com ID ${id} não encontrado`);
+    }
+
+    if (role === 'USER' && user.email !== service.user_mail) {
+      console.log("Usuário não tem permissão para visualizar este serviço")
+      throw new ForbiddenException('Você não tem permissão para visualizar este serviço');
+    }
+
+    return service;
   }
 
-  update(id: number, updateServiceDto: UpdateServiceDto) {
-    return `This action updates a #${id} service`;
+  async update(id: string, updateServiceDto: UpdateServiceDto) {
+    console.log("Recebido Id: ", id)
+    console.log("Recebido Dto: ", updateServiceDto)
+    return await this.prisma.service.update({
+      where: { id },
+      data: updateServiceDto,
+    });
   }
 
   async remove(id: string) {
