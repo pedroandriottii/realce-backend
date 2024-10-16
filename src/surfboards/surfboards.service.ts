@@ -52,9 +52,13 @@ export class SurfboardsService {
   async findByCategory(category: SurfboardsCategory) {
     return await this.prisma.surfboards.findMany({
       where: {
-        category: category
+        AND: [
+          { category: category },
+          { sold: null },
+          { is_new: true }
+        ]
       }
-    })
+    });
   }
 
   async findByPrice(price: number) {

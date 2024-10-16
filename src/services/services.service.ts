@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ServiceStatus, User } from '@prisma/client';
+import { ServiceStatus } from '@prisma/client';
 import { EmailService } from './email.service';
 
 @Injectable()
@@ -30,8 +30,16 @@ export class ServicesService {
       }
     })
 
-    await this.emailService.sendServiceCreatedEmail(user_mail, service.id);
+    const user = await this.prisma.user.findUnique({
+      where: { email: user_mail },
+    })
 
+    if (!user) {
+      await this.emailService.sendServiceCreatedEmail(user_mail);
+      return service;
+    }
+
+    await this.emailService.sendServiceCreatedEmailWithUser(user_mail);
     return service;
   }
 
@@ -51,9 +59,11 @@ export class ServicesService {
     if (service.status === 'PENDING') {
       status = 'READY';
       ready_time = new Date();
+      await this.emailService.sendStatusReadyEmail(service.user_mail)
     } else if (service.status === 'READY') {
       status = 'DELIVERED';
       delivered_time = new Date();
+      await this.emailService.sendStatusDeliveredEmail(service.user_mail)
     } else {
       throw new Error(`O serviço já foi entregue.`);
     }
@@ -70,8 +80,6 @@ export class ServicesService {
       where: { id },
       data: updateData,
     });
-
-    await this.emailService.sendStatusUpdatedEmail(service.user_mail, service.id, status);
 
     return updatedService
   }
