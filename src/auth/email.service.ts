@@ -16,7 +16,6 @@ export const sendVerificationEmail = async (email: string, token: string) => {
         <h1 style="color: #000000; text-align: center;">Seu Código de Verificação</h1>
     </div>
     <div style="padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-
         <p style="color: #333; font-size: 16px; text-align: center;">
             Olá, obrigado por se cadastrar na <strong>Realce Nordeste</strong>! Para completar seu cadastro e
             verificar seu e-mail, por favor insira o código abaixo:
@@ -32,6 +31,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
             Se você não solicitou este e-mail, pode ignorá-lo.
         </p>
     </div>
+    <a href="https://www.instagram.com/consertos.realce/" target="__blank"> Acompanhe o instagram de consertos! </a>
     <div style="text-align: center; margin-top: 20px; color: #777; font-size: 12px;">
         <p>Realce Nordeste, Av. Pres. Castelo Branco, 8159, Jaboatão dos Guararapes</p>
         <p>© 2024 Realce Nordeste. Todos os direitos reservados.</p>
