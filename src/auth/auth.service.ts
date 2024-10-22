@@ -15,7 +15,8 @@ export class AuthService {
     async createUser(createUserDto: CreateUserDto) {
         const { name, email, password, phone } = createUserDto;
 
-        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,18}$/;
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*.])[A-Za-z\d!@#$%^&*.]{6,18}$/;
+
         if (!passwordRegex.test(password)) {
             throw new BadRequestException('A senha deve conter pelo menos uma letra maiúscula, um número e ter entre 6 a 18 caracteres.');
         }
@@ -61,18 +62,18 @@ export class AuthService {
         if (!user) {
             throw new NotFoundException(`Usuário não encontrado.`);
         }
+       
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            throw new UnauthorizedException(`Senha inválida.`);
+        }
 
         if (!user.emailVerified) {
             const verificationToken = await this.verificationTokenService.generateVerificationToken(email);
             await sendVerificationEmail(email, verificationToken.token);
             console.log('Email não verificado');
             throw new UnauthorizedException(`Email não verificado. Verifique seu email para ativar sua conta.`);
-        }
-
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
-        if (!isPasswordValid) {
-            throw new UnauthorizedException(`Senha inválida.`);
         }
 
         const accessToken = this.jwtService.sign({ userId: user.id, role: user.role });
