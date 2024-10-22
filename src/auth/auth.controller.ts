@@ -40,4 +40,28 @@ export class AuthController {
         }
         return await this.authService.verifyEmailCode(email, token);
     }
+
+    @Post('resend-verification')
+    async resendVerification(@Body('email') email: string) {
+        if (!email) {
+            throw new BadRequestException('Email é obrigatório')
+        }
+        return await this.authService.resendVerificationEmail(email);
+    }
+
+    @Post('forgot-password')
+    async forgotPassword(@Body('email') email: string) {
+        if (!email) {
+            throw new BadRequestException('Email é obrigatório')
+        }
+        return await this.authService.forgotPassword(email);
+    }
+
+    @Post('reset-password')
+    async resetPassword(@Body('email') email: string, @Body('token') token: string, @Body('password') password: string) {
+        if (!email || !token || !password) {
+            throw new BadRequestException('Email, token e senha são obrigatórios')
+        }
+        return await this.authService.resetPassword(email, token, password);
+    }
 }
