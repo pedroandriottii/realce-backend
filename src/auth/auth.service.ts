@@ -17,7 +17,7 @@ export class AuthService {
 
         const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,18}$/;
         if (!passwordRegex.test(password)) {
-            return { message: 'A senha deve conter pelo menos uma letra maiúscula, um número e ter entre 6 a 18 caracteres.' };
+            throw new BadRequestException('A senha deve conter pelo menos uma letra maiúscula, um número e ter entre 6 a 18 caracteres.');
         }
 
         const existingUser = await this.prisma.user.findUnique({ where: { email } });
@@ -67,7 +67,6 @@ export class AuthService {
         if (!user.emailVerified) {
             const verificationToken = await this.verificationTokenService.generateVerificationToken(email);
             await sendVerificationEmail(email, verificationToken.token);
-            isEmailVerified = false;
             console.log('Email não verificado');
             return { success: true, user, emailVerified: isEmailVerified };
         }
