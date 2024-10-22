@@ -54,8 +54,6 @@ export class AuthService {
 
     async login(email: string, password: string): Promise<AuthEntity> {
 
-        var isEmailVerified = true;
-
         const user = await this.prisma.user.findUnique({
             where: { email }
         })
@@ -68,7 +66,7 @@ export class AuthService {
             const verificationToken = await this.verificationTokenService.generateVerificationToken(email);
             await sendVerificationEmail(email, verificationToken.token);
             console.log('Email não verificado');
-            return { success: true, user, emailVerified: isEmailVerified };
+            throw new UnauthorizedException(`Email não verificado. Verifique seu email para ativar sua conta.`);
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -79,7 +77,7 @@ export class AuthService {
 
         const accessToken = this.jwtService.sign({ userId: user.id, role: user.role });
 
-        return { success: true, user, accessToken, emailVerified: isEmailVerified };
+        return { success: true, user, accessToken};
     }
 
     async validateOAuthLogin(email: string, name: string): Promise<any> {
