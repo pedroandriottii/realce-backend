@@ -4,10 +4,11 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ServiceStatus } from '@prisma/client';
 import { EmailService } from './email.service';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class ServicesService {
-  constructor(private prisma: PrismaService, private emailService: EmailService) {
+  constructor(private prisma: PrismaService, private emailService: EmailService, private notificationService: NotificationsService) {
   }
 
   async create(createServiceDto: CreateServiceDto) {
@@ -40,6 +41,10 @@ export class ServicesService {
     }
 
     await this.emailService.sendServiceCreatedEmailWithUser(user_mail);
+
+    console.log('Enviando notificação para o cliente:', user_mail);
+    await this.notificationService.notifyClient(user_mail, photo_url, 'Serviço Cadastrado', `/services/${service.id}`);
+
     return service;
   }
 
@@ -60,10 +65,26 @@ export class ServicesService {
       status = 'READY';
       ready_time = new Date();
       await this.emailService.sendStatusReadyEmail(service.user_mail)
+
+      console.log('Enviando notificação para o cliente:', service.user_mail);
+      await this.notificationService.notifyClient(
+        service.user_mail,
+        service.photo_url,
+        'Prancha Pronta para retirada!',
+        `/services/${service.id}`
+      )
     } else if (service.status === 'READY') {
       status = 'DELIVERED';
       delivered_time = new Date();
       await this.emailService.sendStatusDeliveredEmail(service.user_mail)
+
+      console.log('Enviando notificação para o cliente:', service.user_mail);
+      await this.notificationService.notifyClient(
+        service.user_mail,
+        service.photo_url,
+        'Prancha Entregue!',
+        `/services/${service.id}`
+      )
     } else {
       throw new Error(`O serviço já foi entregue.`);
     }

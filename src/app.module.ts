@@ -6,12 +6,13 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ServicesModule } from './services/services.module';
 import { SurfboardsModule } from './surfboards/surfboards.module';
 import { DashboardsModule } from './dashboards/dashboards.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
     isGlobal: true,
     envFilePath: '.env',
-  }), AuthModule, UsersModule, PrismaModule, ServicesModule, SurfboardsModule, DashboardsModule],
+  }), AuthModule, UsersModule, PrismaModule, ServicesModule, SurfboardsModule, DashboardsModule, NotificationsModule],
   controllers: [],
   providers: [],
 })
