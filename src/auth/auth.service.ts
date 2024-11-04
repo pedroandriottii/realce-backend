@@ -21,36 +21,39 @@ export class AuthService {
             throw new BadRequestException('A senha deve conter pelo menos uma letra maiúscula, um número e ter entre 6 a 18 caracteres.');
         }
 
-        const existingUser = await this.prisma.user.findUnique({ where: { email } });
-
-        if (existingUser) {
-            throw new ConflictException('Email já está em uso');
-        }
-
-        const existingPhone = await this.prisma.user.findFirst({ where: { phone } });
-
-        if (existingPhone) {
-            throw new ConflictException('Telefone já está em uso');
-        }
-
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        await this.prisma.user.create({
-            data: {
-                name,
-                email,
-                password: hashedPassword,
-                phone
+        try {
+            await this.prisma.user.create({
+                data: {
+                    name,
+                    email,
+                    password: hashedPassword,
+                    phone
+                }
+            });
+
+            const verificationToken = await this.verificationTokenService.generateVerificationToken(email);
+
+            await sendVerificationEmail(email, verificationToken.token);
+
+            return {
+                message: 'Usuário criado com sucesso. Verifique seu email para ativar sua conta.'
+            };
+
+        } catch (error) {
+            if (error.code === 'P2002') {
+                if (error.meta.target.includes('email')) {
+                    throw new ConflictException('Email já está em uso');
+                }
+                if (error.meta.target.includes('phone')) {
+                    throw new ConflictException('Telefone já está em uso');
+                }
+                throw new ConflictException('Usuário já existente');
             }
-        });
+            throw new BadRequestException('Erro ao criar usuário');
+        }
 
-        const verificationToken = await this.verificationTokenService.generateVerificationToken(email);
-
-        await sendVerificationEmail(email, verificationToken.token);
-
-        return {
-            message: 'Usuário criado com sucesso. Verifique seu email para ativar sua conta.'
-        };
     }
 
     async login(email: string, password: string): Promise<AuthEntity> {
@@ -62,7 +65,7 @@ export class AuthService {
         if (!user) {
             throw new NotFoundException(`Usuário não encontrado.`);
         }
-       
+
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
@@ -72,13 +75,12 @@ export class AuthService {
         if (!user.emailVerified) {
             const verificationToken = await this.verificationTokenService.generateVerificationToken(email);
             await sendVerificationEmail(email, verificationToken.token);
-            console.log('Email não verificado');
             throw new UnauthorizedException(`Email não verificado. Verifique seu email para ativar sua conta.`);
         }
 
         const accessToken = this.jwtService.sign({ userId: user.id, role: user.role });
 
-        return { success: true, user, accessToken};
+        return { success: true, user, accessToken };
     }
 
     async validateOAuthLogin(email: string, name: string): Promise<any> {
