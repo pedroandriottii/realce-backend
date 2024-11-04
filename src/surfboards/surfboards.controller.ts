@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { SurfboardsService } from './surfboards.service';
 import { CreateSurfboardDto } from './dto/create-surfboard.dto';
 import { UpdateSurfboardDto } from './dto/update-surfboard.dto';
@@ -20,8 +20,8 @@ export class SurfboardsController {
   }
 
   @Get()
-  findAll() {
-    return this.surfboardsService.findAll();
+  findAll(@Query('page') page: number) {
+    return this.surfboardsService.findAll(page);
   }
 
   @Get('category/:category')
@@ -29,14 +29,9 @@ export class SurfboardsController {
     return this.surfboardsService.findByCategory(category);
   }
 
-  @Get('price')
-  findByPrice(@Param('price') price: number) {
-    return this.surfboardsService.findByPrice(price);
-  }
-
   @Get('sold')
-  findSoldSurfboards() {
-    return this.surfboardsService.findSoldSurfboards();
+  findSoldSurfboards(@Query('page') page: number) {
+    return this.surfboardsService.findSoldSurfboards(page);
   }
 
   @Get(':id')

@@ -32,8 +32,6 @@ export class SurfboardsService {
   }
 
   async sellSurfboard(id: string, price: number) {
-    console.log("Recebido Id: ", id)
-    console.log("Recebido Price: ", price)
     const surfboard = await this.prisma.surfboards.update({
       where: { id },
       data: {
@@ -45,9 +43,25 @@ export class SurfboardsService {
     return surfboard;
   }
 
-  async findAll() {
-    return await this.prisma.surfboards.findMany({ where: { sold: null } });
+  async findAll(page: number = 1) {
+    const pageSize = 6;
+    const skip = (page - 1) * pageSize;
+
+    const totalSurfboards = await this.prisma.surfboards.count({
+      where: { sold: null }
+    });
+    const totalPages = Math.ceil(totalSurfboards / pageSize);
+
+    const surfboards = await this.prisma.surfboards.findMany({
+      where: { sold: null },
+      take: pageSize,
+      skip: skip,
+    });
+
+    return { surfboards, totalPages };
   }
+
+
 
   async findByCategory(category: SurfboardsCategory) {
     return await this.prisma.surfboards.findMany({
@@ -61,32 +75,41 @@ export class SurfboardsService {
     });
   }
 
-  async findByPrice(price: number) {
-    return await this.prisma.surfboards.findMany({
-      where: {
-        price: {
-          lte: price,
-        },
-      },
-    });
-  }
+  async findSoldSurfboards(page: number = 1) {
+    const pageSize = 6;
+    const skip = (page - 1) * pageSize;
 
-  async findSoldSurfboards() {
-    return await this.prisma.surfboards.findMany({
+    const totalSoldSurfboards = await this.prisma.surfboards.count({
+      where: { sold: { not: null } }
+    });
+    const totalPages = Math.ceil(totalSoldSurfboards / pageSize);
+
+    const surfboards = await this.prisma.surfboards.findMany({
       where: {
         sold: {
           not: null,
         },
       },
+      take: pageSize,
+      skip: skip,
     });
+
+    return { surfboards, totalPages };
   }
 
+
   async findOne(id: string) {
-    console.log("Recebido Id: ", id)
-    return await this.prisma.surfboards.findUnique({
+    const surfboard = await this.prisma.surfboards.findUnique({
       where: { id },
     });
+
+    if (!surfboard) {
+      throw new Error('Surfboard not found');
+    }
+
+    return surfboard;
   }
+
 
   async update(id: number, updateSurfboardDto: UpdateSurfboardDto) {
     return `This action updates a #${id} surfboard`;
