@@ -6,7 +6,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
     await resend.emails.send({
         from: 'contato@realcenordeste.com.br',
         to: email,
-        subject: 'Seu Código de Verificação',
+        subject: `[${token}] Seu Código de Verificação`,
         html: `
           <div
     style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;; border: 1px solid #ddd; border-radius: 10px;">
